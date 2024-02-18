@@ -29,6 +29,8 @@ PS. Technically, the maximum write speed on a 256-byte page MCU is about 36.1kB/
 - Compatible with AVRdude, fully tested on v6.3 and v7.2 loosely based on AVR910 
 - RBG LED to show different stage: blue for write flash, teal for write EEPROM, pink for read back
 
+![FDxICSP1_Xb](https://github.com/flyandancexo/FDxICSP/assets/66555404/f0fd2c0d-1715-4d82-85f7-80a13e4f9d86)
+
 ### More detail
 AVR910 Protocol is actually very bad and buggy, so able to create a programmer that can support 90+% of all AVR MCU is almost a miracle. A lot of tricks are used to make that possible that most people probably never heard of. The first limitation is that AVR910 only can send a 16-bit word-address, so maximum flash memory supported is 2^16*2=131072 bytes or 128k bytes. The second limitation is something call the devcode or device-code. It's an arbitrary 1-byte code designated to simplify the longer 3-byte signature code. What this means is that by definition, only 127 maximum MCUs can be supported, but in reality only fewer than 30 MCUs were given a devcode, so the number of supported MCU for AVR910 is very low. FDxICSP resolves this bug by ignoring the devcode completely and actually getting the required information from the signature bytes using a decoder instead. Not only that, FDxICSP has hacked the devcode and uses it to implement SCK over-ridding functionality. Essentially, when AVR910 gave out a bunch of lemons, FDxICSP makes delicious lemonade out of them.
 
