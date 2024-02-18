@@ -1,6 +1,6 @@
 # FDxICSP 
 ## New High Speed AVR MCU programmer - AVR910 SK500
-![FDxICSP10](https://github.com/flyandancexo/FDxICSP/assets/66555404/50b710b1-f020-4c94-acfa-292883ed979f)
+![A0](https://github.com/flyandancexo/FDxICSP/assets/66555404/efc8ac3a-3ba1-465c-a2d6-1937cb9bb750)
 
 The Juno FDxICSP 1 is a self-programmable programmer that is created with the best hardware and software in a tiny beautifully-craft PCB. A world's fastest bootloader has been developed for it that covers the self-programmable part; The firmware for programmer is also probably the world's fastest and most sophisticated; In comparison, the very popular USBasp claims to have 5kB/s write, but in reality only can write at less than 2.5kB/s.
 
