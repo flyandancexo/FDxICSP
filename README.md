@@ -1,4 +1,4 @@
-# FDxICSP - New High Speed AVR MCU programmer
+# FDxICSP - New 2024 High Speed AVR MCU programmer
 ## AVR910 (28.3kB/s write and 32.2kB/s read) -  SK500 (To be released soon)
 ![A0](https://github.com/flyandancexo/FDxICSP/assets/66555404/efc8ac3a-3ba1-465c-a2d6-1937cb9bb750)
 
