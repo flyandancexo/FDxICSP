@@ -45,6 +45,8 @@ Since memory is written one page at a time and the timing for that is similar ac
 
 Note: Atmega8 and Atiny13 are tested using 2MHz SCK. Atiny13 is slow, but keep in mind that it only has 1k bytes, so at 6.0 kB/s, it took milliseconds to upload its maximum size.
 
+Note 2: AVRdude is actually very slow to a point that it has become the one of the main bottlenecks for my high speed programmer, so its version is important as well. V7.3 and V6.3 had been tested to be on the slower side, whereas V7.2 and V7.1 are faster. All the tests done were using V7.2.
+
 ### Why upload speed is important?
 
 The job of a programmer is to write code to a MCU, so the quality of a programmer can only be defined by its maximum upload speed. Faster upload speed means higher quality, but it can also save you a lot of time. An AVR MCU can be reprogrammed 10k times. The time to just upload 100k bytes to an atmega128 10k times using my FDxICSP would be about 100/28.3*10000=35335 seconds or 588 minutes or 9.8 hours; Same task using an USBasp with maximum upload speed of 2 kB/s would be 100/2*10000=500000 seconds or 8333 minutes or 138 hours. You would save 138-9.8=128.2 hours or 5.34 days. Holy molly, right? And this is only assuming you do that verification.
@@ -76,7 +78,7 @@ The USB cable and USB port can be very critical. The USB-to-Serial CH340G is act
 
 ### Firmware Variations
 
-FDxICSP Firmware Variations: The default baud rate is 1Mbps, but in case if this is not stable on your computer, you can change the firmware to 500kbps. If this is also not stable, get a new computer; FDxICSP is loosely based on AVR910, but AVR910 is broken and buggy, to get it to work properly that supports all MCU, the signature bytes are decoded to extract critical information. It's possible for a MCU to work properly, but with its signature bytes corrupted. FDxICSP requires these signature bytes to function properly, thus 4 variation are available to deal with MCUs with corrupted signature bytes: 1-2kB, 4-8kB, 16-32kB and 64-128kB. Thus if signature bytes are corrupted, the firmware needs to be swapped to properly program that range of MCU. Any of the 4 variations works perfectly fine with MCU with intact signature bytes.
+FDxICSP Firmware Variations: The default baud rate is 1Mbps, but in case if this is not stable on your computer, you can change the firmware to 500kbps. FDxICSP is loosely based on AVR910, but AVR910 is broken and buggy, to get it to work properly that supports all MCU, the signature bytes are decoded to extract critical information. It's possible for a MCU to work properly, but with its signature bytes corrupted. FDxICSP requires these signature bytes to function properly, thus 4 variations are available to deal with MCUs with corrupted signature bytes: 1-2kB, 4-8kB, 16-32kB and 64-128kB. So if signature bytes are corrupted, the firmware needs to be swapped to properly program that range of MCU. Any one of the 4 variations works perfectly fine with MCU with intact signature bytes.
 
 ### Firmware Update
 The default and pre-programmed firmware is FW_FDxICSP_V1.81_[1Mbps]_4k-8k; To upload new firmware to the programmer, enter the following command, while pressing the reset button. The bootloader is configured to have a 1 second delay before exiting bootloader mode, so timing can be critical.
