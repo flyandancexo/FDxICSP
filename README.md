@@ -57,8 +57,9 @@ PS. My bootloader is much faster than my programmer because bootloader is faster
 
 Since the hardware for FDxICSP v1 is self-programmable, it will be used to develop my own better and best communication protocol, and a firmware written very loosely based on either SK500 or SK500v2 will be made available soon, but for now, FDxICSP v1.81 (firmware) is fast, 99.99% probably the fastest, bug-free, error-free, sophisticated, very usable and enjoyable to use.
 
-## How to use
+![A0](https://github.com/flyandancexo/FDxICSP/assets/66555404/efc8ac3a-3ba1-465c-a2d6-1937cb9bb750)
 
+## How to use
 The bootloader has been locked to make sure that it doesn't over-write itself. The bootloader can be removed or updated by connecting the SS jumper near the 6-pin ICSP, and new code can be programmed using those 6 pins, but this should rarely need to be done and updating the bootloader requires another programmer.
 
 What you can do with this board:
@@ -100,12 +101,11 @@ avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x11 -P COM3 -U flash:w:"ne
 
 ![I](https://github.com/flyandancexo/FDxICSP/assets/66555404/69c06401-7fa2-4f27-9f04-6cb6d116b419)
 
-
 ### SPI SCK over-ridding
 
 SCK overriding is possible using a hack with extended switch -x devcode=(#1-7:8-14); Using SCK over-ridding with FDxICSP v1.81 is a little meaningless since the auto-SCK selector is rock solid, but it is possible that auto SCK on some MCU is not stable, and simply lowering the SCK to next step would solve that stability problem. It's not possible to use 4MHz SCK on slower target MCU, but you can try, but it's highly not recommended, as it could potentially corrupt your MCU. Therefore SCK overriding should only be used if readback is not stable.
 
-PS. Programmer ID is hacked to display the SCK number and the actual auto-selected SCK rate, but when over-ridding is used, it will not display the over-rode SCK value because Programmer ID is requested before devcode.
+PS. Programmer ID is hacked to display the SCK number and the actual auto-selected SCK rate, but when over-ridding is used, it will not display the correct over-rode SCK value because Programmer ID is requested before devcode. In AVR910, Pagesize/Buffersize is requested before devcode, and it is clearly a bug. This is very dumb; it's just like asking someone to pay for something before knowing what they want to buy. This dumb decision was picked probably due to the low SRAM size of the ancient MCU used for the original firmware. In FDxICSP, a 256-byte buffer is reserved, and pagesize is decoded from the target MCU dynamically. 
 
 ```
 ###Devcode from 1-7:8-14[SCK:4M,2M,1M,500K,250K,125K,62K]{31k,15k,7.8k,3.9k,1.9k,976,488}
