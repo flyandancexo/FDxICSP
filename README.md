@@ -1,5 +1,5 @@
 # FDxICSP - New 2024 High Speed AVR MCU programmer
-## AVR910 (28.3kB/s write and 32.2kB/s read) -  SK500 (To be released soon)
+## AVR910 (28.3kB/s write and 32.2kB/s read) -  SK500 (To be released next)
 ![A0](https://github.com/flyandancexo/FDxICSP/assets/66555404/efc8ac3a-3ba1-465c-a2d6-1937cb9bb750)
 
 The Juno FDxICSP 1 is a self-programmable programmer that is created with the best hardware and software in a tiny beautifully-craft PCB. A world's fastest bootloader has been developed for it that covers the self-programmable part; The firmware for programmer is also probably the world's fastest, 28.3kB/s write and most sophisticated; In comparison, the very popular USBasp claims to have 5kB/s write, but in reality only can write at less than 2.5kB/s.
@@ -45,11 +45,13 @@ Since memory is written one page at a time and the timing for that is similar ac
 
 Note: Atmega8 and Atiny13 are tested using 2MHz SCK. Atiny13 is slow, but keep in mind that it only has 1k bytes, so at 6.0 kB/s, it took milliseconds to upload its maximum size.
 
-Note 2: AVRdude is actually very slow to a point that it has become the one of the main bottlenecks for my high speed programmer, so its version is important as well. V7.3 and V6.3 had been tested to be on the slower side, whereas V7.2 and V7.1 are faster. All the tests done were using V7.2.
+Note 2: AVRdude is actually very slow to a point that it has become the one of the main bottlenecks for my high speed programmer. All the tests done were using V7.2.
 
 ### Why upload speed is important?
 
 The job of a programmer is to write code to a MCU, so the quality of a programmer can only be defined by its maximum upload speed. Faster upload speed means higher quality, but it can also save you a lot of time. An AVR MCU can be reprogrammed 10k times. The time to just upload 100k bytes to an atmega128 10k times using my FDxICSP would be about 100/28.3*10000=35335 seconds or 588 minutes or 9.8 hours; Same task using an USBasp with maximum upload speed of 2 kB/s would be 100/2*10000=500000 seconds or 8333 minutes or 138 hours. You would save 138-9.8=128.2 hours or 5.34 days. Holy molly, right? And this is only assuming you do that verification.
+
+![FDxICSP1_N](https://github.com/flyandancexo/FDxICSP/assets/66555404/ff00dac3-a463-4fd1-bf15-e598099ce2dc)
 
 PS. My bootloader is much faster than my programmer because bootloader is faster by definition, so for developing with MCU with larger than 32kB memory, using a good bootloader is still recommended. The same task with my FDxboot would be about 100/36.1*10000=27700 seconds or 461 minutes or 7.7 hours.
 
@@ -102,10 +104,9 @@ avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x11 -P COM3 -U flash:w:"ne
 ![I](https://github.com/flyandancexo/FDxICSP/assets/66555404/69c06401-7fa2-4f27-9f04-6cb6d116b419)
 
 ### SPI SCK over-ridding
+SCK overriding is possible with a hack using extended switch -x devcode=(#1-7:8-14); Using SCK over-ridding with FDxICSP v1.81 is a little meaningless since the auto-SCK selector is rock solid, but it is possible that auto SCK on some MCU is not stable during read-back, and simply lowering the SCK to next step would solve that stability problem. It's not possible to use 4MHz SCK on slower target MCU, but you can try, but it's highly not recommended, as it could potentially corrupt your MCU by accidentally writing a wrong fuse to it. Therefore SCK overriding should only be used if readback is not stable.
 
-SCK overriding is possible using a hack with extended switch -x devcode=(#1-7:8-14); Using SCK over-ridding with FDxICSP v1.81 is a little meaningless since the auto-SCK selector is rock solid, but it is possible that auto SCK on some MCU is not stable, and simply lowering the SCK to next step would solve that stability problem. It's not possible to use 4MHz SCK on slower target MCU, but you can try, but it's highly not recommended, as it could potentially corrupt your MCU. Therefore SCK overriding should only be used if readback is not stable.
-
-PS. Programmer ID is hacked to display the SCK number and the actual auto-selected SCK rate, but when over-ridding is used, it will not display the correct over-rode SCK value because Programmer ID is requested before devcode. In AVR910, Pagesize/Buffersize is requested before devcode, and it is clearly a bug. This is very dumb; it's just like asking someone to pay for something before knowing what they want to buy. This dumb decision was picked probably due to the low SRAM size of the ancient MCU used for the original firmware. In FDxICSP, a 256-byte buffer is reserved, and pagesize is decoded from the target MCU dynamically. 
+Programmer ID is hacked to display the SCK number and the actual auto-selected SCK rate, but when over-ridding is used, it will not display the correct over-rode SCK value because Programmer ID is requested before devcode. SCK number is given by k#_SCK, so if k2->2M is not stable, then use the -x devcode=3 overridden value. Notice decimal number should be used since it's easier. On the other hand, when auto SCK is picked, 0x11 is easier to remember and type: 0x11 == 17; 
 
 ```
 ###Devcode from 1-7:8-14[SCK:4M,2M,1M,500K,250K,125K,62K]{31k,15k,7.8k,3.9k,1.9k,976,488}
