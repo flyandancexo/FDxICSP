@@ -1,170 +1,142 @@
-# FDxICSP - New 2024 High Speed AVR MCU programmer
-## AVR910 (28.3kB/s write and 32.2kB/s read) -  STK500 (To be released next)
-![A0](https://github.com/flyandancexo/FDxICSP/assets/66555404/efc8ac3a-3ba1-465c-a2d6-1937cb9bb750)
+# FDxICSP - Self-Programmable High-Speed AVR SPI Programmer
 
-The Juno FDxICSP 1 is a self-programmable programmer that is created with the best hardware and software in a tiny beautifully-craft PCB. A world's fastest bootloader has been developed for it that covers the self-programmable part; The firmware for programmer is also probably the world's fastest, 28.3kB/s write and most sophisticated; In comparison, the very popular USBasp claims to have 5kB/s write, but in reality only can write at less than 2.5kB/s.
+FDxICSP is a 3-in-1 AVR SPI ISP programmer supporting  **AVR910**, **STK500v1**, and **STK500v2**.
 
-A bootloader can be anything, and it's implemented with a self-programmable mechanism to upload new code to the application section of the MCU; FDxboot v1.61 is the name of the firmware for the bootloader, and it has achieved a maximum speed of 36.1kB/s upload (write) and 51.1kB/s read; 2, A programmer is the hardware responsible to write to (program) another MCU, and it's also the application of being the programmer. FDxICSP v1.81 is the name of the firmware for that, and it has achieved a maximum speed of 28.3kB/s write and 32.2kB/s read; In short, there are 2 mini systems in one chip both coded near perfection. The bootloader can update the programmer(application), and the programmer can update another external MCU all using the same USB cable, so FDxICSP 1 is an egg and a chicken at the same time. They co-exist on the same chip.
+<p align="center">
+  <img src="img/FDxICSP.jpg" alt="" width="100%">
+</p>
 
-PS. Technically, the maximum write speed on a 256-byte page MCU is about 36.1kB/s, but FDxICSP is still probably the world's fastest AVR programmer at 28.3kB/s.
+The Juno FDxICSP is a self-programmable programmer, a chicken, an egg, KFC, Chick-fil-A and more in one mini package, if you will. Correction: It is a chicken with 3 eggs. The self-programmable nature of the board allows it to switch seamlessly among 3 custom-written programmer firmware: AVR910, STK500v1, and STK500v2, on the same USB cable. All 3 of these firmware are optimized for speed, and they are probably the world's fastest SPI AVR MCU programmers.
 
-![B](https://github.com/flyandancexo/FDxICSP/assets/66555404/a03aa044-d3fb-49e7-babc-e665d4c00a00)
+<img src="img/FDxICSP_Pro.jpg" alt="" width="500" align="left">
 
-## Features for FDxICSP v1 (Hardware): 
-- Tinniest size PCB with expertly hand-draw trace (40mm x 16mm board size) 
-- CH340G supports up to 2Mbps ( 500kbps default for bootloader; 1Mbps default for programmer ) 
-- Over voltage and over current protection build in 
-- Support 5V and 3V option with 2 jumpers (Connect one of them ONLY) 
-- A large RBG LED and a reset button 
-- Self-Programmable, target-programmable and more 
+The genuine CH340G USB-UART chip was chosen for the driver. This chip has been fully tested to be stable at a 2Mbps baud rate. For the Atmega88 MCU running on an RC oscillator clock of 8MHz, only 1Mbps is possible. Under various rigorous tests, this is not the bottleneck.
 
-## Features for FDxICSP v1.81 (Firmware - 2 main variations and 8 total): 
-- Universally support all AVR MCU with 128kB or less that use SPI Memory Programming 
-- Expertly written firmware with a lot of hidden features, error free at 4MHz 
-- Support write and read to EEPROM, fuses, calibration, and signature bytes 
-- Upload speed absolute Maximum @28.3kB/s on an Atmega128 with 4MHz SCK
-- Support target MCU with 16MHz-1.9kHz system clock speed, all clock range basically 
-- Seamless Auto Maximum SCK from 4MHz-488Hz True SPI Hardware + Good SPI Software 
-- Support SCK over-ridding with extended option using -x devcode (#1-7:8-14) (Auto SCK:0x11)
-- Compatible with AVRdude, fully tested on v6.3 and v7.2 loosely based on AVR910 
-- RBG LED to show different stage: blue for write flash, teal for write EEPROM, pink for read back
+Hardware-wise, we have an elongated 6-pin ICSP female header for ease of connection to the target MCU board. The In-Circuit Serial Programming allows the MCUs to be programmable even on a board. A large RGB color LED shows every stage of the programmer's status. Pressing the reset button puts the device into bootloader mode for 1.5 seconds before loading the uploaded programmer program.
+<br clear="left">
 
-![FDxICSP1_Xb](https://github.com/flyandancexo/FDxICSP/assets/66555404/f0fd2c0d-1715-4d82-85f7-80a13e4f9d86)
+## Hardware
+- 40 mm x 16 mm compact PCB
+- ATmega88 programmer MCU with protected FDxboot bootloader
+- CH340G USB-to-serial interface
+- 1 Mbps programmer communication; 500 kbps FDxboot communication
+- Automatic ISP SCK selection from 4 MHz down to 488 Hz
+- Hardware SPI for faster targets and software SPI for very slow targets
+- Selectable 5 V or 3 V target operation; connect only one voltage option
+- Flash, EEPROM, signature, calibration, fuse, and lock-bit access
+- Fuse and lock writes are guarded by a fresh target-signature check
+- RGB status LED, reset button, over-current protection, and voltage protection
 
-### More detail
-AVR910 Protocol is actually very bad and buggy, so able to create a programmer that can support 90+% of all AVR MCU is almost a miracle. A lot of tricks are used to make that possible that most people probably never heard of. The first limitation is that AVR910 only can send a 16-bit word-address, so maximum flash memory supported is 2^16*2=131072 bytes or 128k bytes. The second limitation is something call the devcode or device-code. It's an arbitrary 1-byte code designated to simplify the longer 3-byte signature code. What this means is that by definition, only 127 maximum MCUs can be supported, but in reality only fewer than 30 MCUs were given a devcode, so the number of supported MCU for AVR910 is very low. FDxICSP resolves this bug by ignoring the devcode completely and actually getting the required information from the signature bytes using a decoder instead. Not only that, FDxICSP has hacked the devcode and uses it to implement SCK over-ridding functionality. Essentially, when AVR910 gave out a bunch of lemons, FDxICSP makes delicious lemonade out of them.
+## Programmer Firmware
 
-### More about upload speed
-Upload speed depends on many factors. The actual file size, the page size of the target MCU and the maximum system clock of the target MCU all affect the attainable maximum upload speed. Writing speed is normally slower than read speed because writing to flash memory requires a fixed period of waiting time, whereas reading doesn't need to wait, but to actually improve readback stability, FDxICSP lowers the readback SCK to next step, so reading can be slower than writing if the system clock is slower than 8MHz.
+The same FDxICSP hardware can run any one of the three programmer firmwares below. FDxboot makes it possible to change firmware without another programmer.
 
-![V181](https://github.com/flyandancexo/FDxICSP/assets/66555404/94a58e6b-7433-484b-8ffe-f9fc552a3f44)
+| Programmer Firmware  | Write Record |  Read Record | Maximum-Speed Test |
+|---|---:|---:|---|
+| FDxICSP AVR910  | **28.3 kB/s** | **32.2 kB/s** | ATmega128, 256-byte pages, 4 MHz ISP SCK |
+| FDxICSP STK500v1  | **25.59 kB/s** | **33.42 kB/s** | ATmega128, 129,998-byte test file |
+| FDxICSP STK500v2  | **20.83 kB/s** | **31.17 kB/s** | ATmega128, 129,998-byte test file |
 
-Since memory is written one page at a time and the timing for that is similar across all MCUs, MCUs with a larger page size write faster. FDxICSP uses an algorithm to automatically select the maximum SCK for the target MCU, but this SCK still depends on the target MCU's own system clock. A target MCU clocked-in with 16MHz supports maximum 4MHz SPI SCK. This is also a very big speed factor. Finally, the larger the file, the faster speed can be attained. If you sell ice-cream in big buckets, you would sell them faster than in tiny cups. It's more efficient with larger portion.
+The AVR910 result is the original FDxICSP record and is probably a world-record result for an AVR910-compatible serial SPI programmer. The STK500v1 maximum was measured with V3.1 and the STK500v2 maximum with V2.10; the current V3.2 and V2.2 releases retain their programming hot paths while adding the shared LED behavior and fuse-write guard.
 
-![speed](https://github.com/flyandancexo/FDxICSP/assets/66555404/b0f4b514-4a0b-49d1-a41a-fc230f789b71)
+These are maximum measured results, not guaranteed speeds for every target. Actual performance depends on the target MCU, Flash page size, file size, target clock, selected ISP SCK, computer, USB connection, serial driver, AVRDUDE version, and verification overhead.
 
-Note: Atmega8 and Atiny13 are tested using 2MHz SCK. Atiny13 is slow, but keep in mind that it only has 1k bytes, so at 6.0 kB/s, it took milliseconds to upload its maximum size.
+## FDxICSP 1.86 AVR910
 
-Note 2: AVRdude is actually very slow to a point that it has become the one of the main bottlenecks for my high speed programmer. All the tests done were using V7.2.
+<p>
+<img src="img/ST_FDxICSP_AVR910.jpg" width="600" align="left" alt="FDxICSP AVR910 speed test">
+The AVR910 firmware is the smallest and most specialized option. FDxICSP extends the old AVR910 protocol with signature-based target handling, automatic SCK selection, hardware and software SPI, page programming, EEPROM access, fuse and lock access, and optional manual SCK selection through the AVRDUDE devcode extension. The common ATmega16 screenshot test reached 18.72 kB/s write and 19.19 kB/s read. Its main limitation is device compatibility: AVR910 is an old protocol, and the current implementation is intended for classic SPI ISP AVR targets with no more than 128 KB Flash.
+</p>
 
-### Why upload speed is important?
+<br clear="left">
 
-The job of a programmer is to write code to a MCU, so the quality of a programmer can only be defined by its maximum upload speed. Faster upload speed means higher quality, but it can also save you a lot of time. An AVR MCU can be reprogrammed 10k times. The time to just upload 100k bytes to an atmega128 10k times using my FDxICSP would be about 100/28.3*10000=35335 seconds or 588 minutes or 9.8 hours; Same task using an USBasp with maximum upload speed of 2 kB/s would be 100/2*10000=500000 seconds or 8333 minutes or 138 hours. You would save 138-9.8=128.2 hours or 5.34 days. Holy molly, right? And this is only assuming you do that verification.
+Use `-x devcode=0x11` for automatic SCK selection. Manual SCK override remains available for unusual or unstable targets.
 
-![FDxICSP1_N](https://github.com/flyandancexo/FDxICSP/assets/66555404/ff00dac3-a463-4fd1-bf15-e598099ce2dc)
+## FDxICSP 3.2 STK500v1
 
-PS. My bootloader is much faster than my programmer because bootloader is faster by definition, so for developing with MCU with larger than 32kB memory, using a good bootloader is still recommended. The same task with my FDxboot would be about 100/36.1*10000=27700 seconds or 461 minutes or 7.7 hours.
+<p>
+<img src="img/ST_FDxICSP_STK500v1.jpg" width="600" align="left" alt="FDxICSP STK500v1 speed test">
+The STK500v1 firmware is a practical general-purpose choice for classic AVR SPI ISP programming. AVRDUDE supplies the target parameters, so it generally supports a broader range of classic AVR devices than AVR910 without relying on the AVR910 device-code system. It supports Flash, EEPROM, signatures, calibration bytes, fuses, lock bits, automatic SCK selection, and the shared fuse-write guard. The common ATmega16 screenshot test reached 18.95 kB/s write and 22.91 kB/s read. The current FDxICSP implementation is limited to classic SPI ISP targets with no more than 128 KB Flash.
+</p>
 
-### What is next?
+<br clear="left">
 
-Since the hardware for FDxICSP v1 is self-programmable, it will be used to develop my own better and best communication protocol, and a firmware written very loosely based on either SK500 or SK500v2 will be made available soon, but for now, FDxICSP v1.81 (firmware) is fast, 99.99% probably the fastest, bug-free, error-free, sophisticated, very usable and enjoyable to use.
+Use this firmware with AVRDUDE programmer type `stk500v1`.
 
-![A0](https://github.com/flyandancexo/FDxICSP/assets/66555404/efc8ac3a-3ba1-465c-a2d6-1937cb9bb750)
+## FDxICSP 2.2 STK500v2
 
-## How to use
-The bootloader has been locked to make sure that it doesn't over-write itself. The bootloader can be removed or updated by connecting the SS jumper near the 6-pin ICSP, and new code can be programmed using those 6 pins, but this should rarely need to be done and updating the bootloader requires another programmer.
+<p>
+<img src="img/ST_FDxICSP_STK500v2.jpg" width="600" align="left" alt="FDxICSP STK500v2 speed test">
+The STK500v2 firmware provides the newest of the three supported AVRDUDE programmer protocols and broad compatibility with classic AVR device definitions. It supports Flash, EEPROM, signatures, calibration bytes, fuses, lock bits, automatic SCK selection, and guarded fuse or lock writes. The common ATmega16 screenshot test reached 13.83 kB/s write and 20.75 kB/s read. Although the full STK500v2 protocol can describe additional programming modes and larger address ranges, this compact FDxICSP implementation remains a classic SPI ISP programmer for targets with no more than 128 KB Flash.
+</p>
 
-What you can do with this board:
-1, You can use this just as a programmer (FDxICSP v1.81 is pretty good already)
-2, You can use this to develop your own programmer, since the board is self-programmable.
-3, You can use this as a development board. It has 4 programmable IO pins and 3 LEDs.
-4, You can reprogram this as a SPI reader for your computer.
-5, It can be a universal programmer for other type of chips.
+<br clear="left">
 
-FDxboot is loosely based on AVR109 (bootloader) with default 500kbps baud rate, and FDxICSP is loosely based on AVR910 (programmer) with default 1Mbps baud rate. FDxboot is harder to remove, on the other hand FDxICSP can be easily removed or updated.
+Use this firmware with AVRDUDE programmer type `stk500v2`.
 
-![V181b](https://github.com/flyandancexo/FDxICSP/assets/66555404/778c7f44-72f6-4a45-817a-63c9ae407923)
+## MCU Support and Limitations
 
-### Potential Problems
+None of the three firmwares supports every AVR MCU. Current FDxICSP firmware is intended for classic 8-bit AVR devices that use the SPI ISP programming interface and have no more than 128 KB Flash.
 
-The USB cable and USB port can be very critical. The USB-to-Serial CH340G is actually a solid serious serial chip, but if you can't install the driver properly, try to use older driver. For example, on one of my computers, CH341SER v3.4 is the only driver version that works, but on my other computer, all version works fine.
+The hardware does not support UPDI, PDI, TPI, JTAG, debugWIRE, high-voltage serial programming, or high-voltage parallel programming. It also cannot recover a target after the SPI programming interface or RESET pin has been disabled by fuse settings, because that recovery requires high-voltage programming hardware.
 
-### Firmware Variations
+STK500v1 and STK500v2 generally provide broader classic-AVR compatibility because AVRDUDE sends the target parameters. AVR910 uses FDxICSP's compact signature decoder and remains the most specialized option.
 
-FDxICSP Firmware Variations: The default baud rate is 1Mbps, but in case if this is not stable on your computer, you can change the firmware to 500kbps. FDxICSP is loosely based on AVR910, but AVR910 is broken and buggy, to get it to work properly that supports all MCU, the signature bytes are decoded to extract critical information. It's possible for a MCU to work properly, but with its signature bytes corrupted. FDxICSP requires these signature bytes to function properly, thus 4 variations are available to deal with MCUs with corrupted signature bytes: 1-2kB, 4-8kB, 16-32kB and 64-128kB. So if signature bytes are corrupted, the firmware needs to be swapped to properly program that range of MCU. Any one of the 4 variations works perfectly fine with MCU with intact signature bytes.
+## LED Status
 
-### Firmware Update
-The default and pre-programmed firmware is FW_FDxICSP_V1.81_[1Mbps]_4k-8k; To upload new firmware to the programmer, enter the following command, while pressing the reset button. The bootloader is configured to have a 1 second delay before exiting bootloader mode, so timing can be critical.
+- Idle: short purple followed by longer blue
+- Writing Flash, EEPROM, fuse, or lock data: purple
+- Reading and verification: cyan
+- Chip erase: white
+- Successful completion: two green flashes
+- The blue channel also follows real ISP SCK activity
 
-```
-### Note: you may need to use direct path for avrdude and the firmware file
-avrdude.exe -c avr109 -p m88 -b 500000 -P COM3 -U flash:w:"FW_FDxICSP_V1.81.hex":i -v
-```
+## Upload New Programmer Firmware
 
-### Using the programmer
+FDxboot uses the AVR109 programmer type at 500 kbps. Press RESET as the command starts so FDxboot remains active. The command format is the same for all three programmer firmwares; only the HEX filename changes.
 
-Extended switch -x devcode=(0x1-0x11) or 1-17 are reserved for FDxICSP, as these numbers are not assigned to anything. Use 0x11 as default, and this is the auto SCK option.
-
-```
-###To upload new code to a target MCU using the programmer, plug in and enter the following command:
-avrdude.exe -c AVR910 -p TARGET_MCU_PART_NAME -b 1000000 -x devcode=0x11 -P COM3 -U flash:w:"newCode.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x11 -P COM3 -U flash:w:"newCode.hex":i
+```text
+avrdude.exe -c avr109 -p m88 -b 500000 -P COM3 -U flash:w:"FDxICSP_2.2_STK500v2.hex":i -v
 ```
 
-![I](https://github.com/flyandancexo/FDxICSP/assets/66555404/69c06401-7fa2-4f27-9f04-6cb6d116b419)
+Available programmer firmware filenames:
 
-### SPI SCK over-ridding
-SCK overriding is possible with a hack using extended switch -x devcode=(#1-7:8-14); Using SCK over-ridding with FDxICSP v1.81 is a little meaningless since the auto-SCK selector is rock solid, but it is possible that auto SCK on some MCU is not stable during read-back, and simply lowering the SCK to next step would solve that stability problem. It's not possible to use 4MHz SCK on slower target MCU, but you can try, but it's highly not recommended, as it could potentially corrupt your MCU by accidentally writing a wrong fuse to it. Therefore SCK overriding should only be used if readback is not stable.
+- `FDxICSP_1.86_AVR910.hex`
+- `FDxICSP_3.2_STK500v1.hex`
+- `FDxICSP_2.2_STK500v2.hex`
 
-Programmer ID is hacked to display the SCK number and the actual auto-selected SCK rate, but when over-ridding is used, it will not display the correct over-rode SCK value because Programmer ID is requested before devcode. SCK number is given by k#_SCK, so if k2->2M is not stable, then use the -x devcode=3 overridden value. Notice decimal number should be used since it's easier. On the other hand, when auto SCK is picked, 0x11 is easier to remember and type: 0x11 == 17; 
+## Using AVRDUDE
 
-```
-###Devcode from 1-7:8-14[SCK:4M,2M,1M,500K,250K,125K,62K]{31k,15k,7.8k,3.9k,1.9k,976,488}
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x1 -P COM3 -U flash:w:"newCode_4M.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x2 -P COM3 -U flash:w:"newCode_2M.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x3 -P COM3 -U flash:w:"newCode.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x4 -P COM3 -U flash:w:"newCode.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x5 -P COM3 -U flash:w:"newCode.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x6 -P COM3 -U flash:w:"newCode_125K.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x7 -P COM3 -U flash:w:"newCode_62K.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x8 -P COM3 -U flash:w:"newCode_31K.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=13 -P COM3 -U flash:w:"newCode_976Hz.hex":i
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=14 -P COM3 -U flash:w:"newCode_488Hz.hex":i
+Replace `COM3`, `m16`, and the filename with the correct port, target part name, and file. The AVRDUDE programmer type must match the firmware currently installed on FDxICSP.
 
-###Devcode from 0x0F-0x11 (15-17) == auto select maximum SCK 
-avrdude.exe -c AVR910 -p m328p -b 1000000 -x devcode=0x11 -P COM3 -U flash:w:"newCode.hex":i
+### Write Flash
+
+```text
+avrdude.exe -c avr910 -p m16 -b 1000000 -x devcode=0x11 -P COM3 -U flash:w:"firmware.hex":i
+avrdude.exe -c stk500v1 -p m16 -b 1000000 -P COM3 -U flash:w:"firmware.hex":i
+avrdude.exe -c stk500v2 -p m16 -b 1000000 -P COM3 -U flash:w:"firmware.hex":i
 ```
 
-### Create New Programmer in AVRdude
+### Write EEPROM
 
-To simplify the command line, following entrances can be added to the avrdude.conf file:
-
+```text
+avrdude.exe -c stk500v1 -p m16 -b 1000000 -P COM3 -U eeprom:w:"eeprom.hex":i
 ```
 
-#------------------------------------------------------------
-# FDxICSP - FDxICSP1M
-#------------------------------------------------------------
-programmer
-  id    = "FDxICSP1M";
-  desc  = "Flyandance High Speed ISP at 1Mbps";
-  type  = "avr910";
-  baudrate = 1000000;
-  prog_modes = PM_ISP;
-  connection_type = serial;
-;
+### Read EEPROM
 
-#------------------------------------------------------------
-# FDxICSP - 500kbps
-#------------------------------------------------------------
-programmer
-  id    = "FDxICSP500K";
-  desc  = "Flyandance High Speed ISP at 500kbps";
-  type  = "avr910";
-  baudrate = 500000;
-  prog_modes = PM_ISP;
-  connection_type = serial;
-;
-
-#######################################################
-### New command to use the new programmer 
-#######################################################
-
-avrdude.exe -c FDxICSP1M -p m328p -x devcode=0x11 -P COM3 -U flash:w:"newCode.hex":i
-avrdude.exe -c FDxICSP500K -p m328p -x devcode=0x11 -P COM3 -U flash:w:"newCode.hex":i
+```text
+avrdude.exe -c stk500v1 -p m16 -b 1000000 -P COM3 -U eeprom:r:"eeprom_backup.hex":i
 ```
 
+## USB and Driver Notes
 
-To support the creation of more quality project, do donate whatever amount that you are comfortable with.
+A stable USB cable, USB port, and CH340 driver are important at high serial baud rates. If AVRDUDE reports synchronization or transfer errors, try another cable or USB port before changing firmware. Some systems work better with an older CH341SER driver.
+
+## Other Uses
+
+Because FDxICSP is self-programmable, the board can also be used as a compact AVR development platform, custom serial-to-SPI tool, protocol experiment board, or base for another programmer design. Four MCU I/O pins and the three LED channels are available to custom firmware.
+
+## Buy Me a Coffee
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://paypal.me/flyandance?country.x=US&locale.x=en_US)
-
